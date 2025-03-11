@@ -320,35 +320,30 @@ async function handleSendMessage() {
 
         systemContent += `\n\nKeep responses fairly concise (1-3 paragraphs) but impactful.`;
         
-        // Get AI response
-        const completion = await websim.chat.completions.create({
-            messages: [
-                {
-                    role: "system",
-                    content: systemContent
-                },
-                ...recentHistory
-            ]
-        });
-        
-        // Remove typing indicator
-        typingIndicator.remove();
-        
-        // Add bot response to UI
-        addMessageToChat(completion.content, false);
-        
-        // Add to conversation history
-        const assistantMessage = {
-            role: "assistant",
-            content: completion.content
-        };
-        conversationHistory.push(assistantMessage);
-        
-        // Update chat in storage
-        if (currentChat) {
-            currentChat.messages = [...conversationHistory];
-            saveChats();
-        }
+        // Simulate AI response instead of using websim
+        setTimeout(async () => {
+            // Remove typing indicator
+            typingIndicator.remove();
+            
+            // Generate a response using our local function
+            const responseContent = await generateOdinnResponse(message, userIdentity);
+            
+            // Add bot response to UI
+            addMessageToChat(responseContent, false);
+            
+            // Add to conversation history
+            const assistantMessage = {
+                role: "assistant",
+                content: responseContent
+            };
+            conversationHistory.push(assistantMessage);
+            
+            // Update chat in storage
+            if (currentChat) {
+                currentChat.messages = [...conversationHistory];
+                saveChats();
+            }
+        }, 1500); // Simulate thinking time
         
     } catch (error) {
         // Remove typing indicator
@@ -358,6 +353,84 @@ async function handleSendMessage() {
         addMessageToChat("The ravens failed to return with my wisdom. Try again, wanderer.", false);
         console.error("Error:", error);
     }
+}
+
+// Function to generate Óðinn's responses locally
+async function generateOdinnResponse(userMessage, userIdentity) {
+    // Basic greeting responses
+    const greetings = ["hello", "hi", "hey", "greetings", "hail"];
+    const aboutSelf = ["who are you", "tell me about yourself", "what are you", "who is odin"];
+    const aboutNorse = ["norse", "mythology", "viking", "asgard", "valhalla", "yggdrasil"];
+    const aboutRunes = ["runes", "rune", "magic", "seidr", "seiðr"];
+    const aboutRealms = ["realms", "worlds", "midgard", "asgard", "jotunheim"];
+    
+    // Common response elements
+    const greetingResponses = [
+        "Hail, seeker of wisdom! The Allfather acknowledges your presence.",
+        "My ravens bring word of your arrival. What knowledge do you seek?",
+        "I greet you from high Hliðskjálf, my throne from which I observe all the realms."
+    ];
+    
+    const nameReference = userIdentity && userIdentity.name ? 
+        `${userIdentity.name}` : 
+        ["wanderer", "seeker", "mortal", "curious one"][Math.floor(Math.random() * 4)];
+    
+    // Check for simple greeting
+    const lowercaseMessage = userMessage.toLowerCase();
+    if (greetings.some(g => lowercaseMessage.includes(g))) {
+        return `${greetingResponses[Math.floor(Math.random() * greetingResponses.length)]}\n\nWhat brings you to seek the counsel of the Allfather today, ${nameReference}?`;
+    }
+    
+    // Check for questions about Óðinn
+    if (aboutSelf.some(g => lowercaseMessage.includes(g))) {
+        return `I am Óðinn, the Allfather, ruler of Asgard and chief of the Æsir. I sacrificed my eye at Mimir's well for wisdom and hung from Yggdrasil for nine days to learn the secrets of the runes.\n\nMy ravens, Huginn and Muninn, fly across Midgard each day, bringing me knowledge of all that transpires. What wisdom do you seek from me, ${nameReference}?`;
+    }
+    
+    // Check for questions about Norse mythology
+    if (aboutNorse.some(g => lowercaseMessage.includes(g))) {
+        return `The tales of the Norse are written in blood and glory, ${nameReference}. From the creation of the worlds from Ymir's body to the final battle of Ragnarök, our sagas speak of honor, wisdom, and fate.\n\nThe warriors who die gloriously in battle join me in Valhalla, where they feast and train for the final battle at the end of days. What aspect of our ways interests you most?`;
+    }
+    
+    // Check for questions about runes
+    if (aboutRunes.some(g => lowercaseMessage.includes(g))) {
+        return `The runes hold power that few comprehend, ${nameReference}. I hung from Yggdrasil for nine long days and nights, pierced by my own spear, to gain their knowledge.\n\nThey are not merely symbols, but living forces that shape the very fabric of the Nine Realms. To master them is to master reality itself, though such wisdom comes at great cost. What would you know of their mysteries?`;
+    }
+    
+    // Check for questions about the Nine Realms
+    if (aboutRealms.some(g => lowercaseMessage.includes(g))) {
+        return `The Nine Realms are connected by the branches of Yggdrasil, the World Tree. Asgard, home of the Æsir; Midgard, realm of humans; Jotunheim, land of the giants; Niflheim, world of ice; Muspelheim, realm of fire; Alfheim, home of the light elves; Svartalfheim, realm of dwarves; Vanaheim, land of the Vanir; and Helheim, domain of the dead.\n\nEach has its own nature and inhabitants, ${nameReference}, though all are bound by the laws of fate that even I cannot escape.`;
+    }
+    
+    // Default response for other questions
+    const defaultResponses = [
+        `My wisdom runs deep as the well of Urd, ${nameReference}. ${userMessage.length < 20 ? "But you must ask a full question to receive the knowledge you seek." : "Consider what you truly wish to know, and I shall guide you with the wisdom of ages."}`,
+        
+        `I have gazed into the waters of Mimir's well with my single eye, ${nameReference}. The answer you seek lies in understanding that ${generateWisdom()}.`,
+        
+        `By the blood of Ymir and the wisdom of the Norns, I say to you, ${nameReference}: ${generateWisdom()} This is the truth as I have learned through my sacrifices.`,
+        
+        `My ravens whisper many secrets to me, ${nameReference}. They tell me that ${generateWisdom()} Reflect on this, and you may find the wisdom you seek.`
+    ];
+    
+    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+}
+
+// Generate wise-sounding Norse phrases
+function generateWisdom() {
+    const phrases = [
+        "fate weaves its threads even through the actions of gods.",
+        "true strength comes not from conquest, but from sacrifice and understanding.",
+        "a wise warrior knows when to raise the sword and when to extend the hand of friendship.",
+        "knowledge is bought with pain, as I learned when I hung from Yggdrasil.",
+        "all that happens is written in the roots of the World Tree.",
+        "one who fears death shall never know glory in life.",
+        "wisdom and suffering are two ravens perched on the same branch.",
+        "power without wisdom is like Mjölnir without Thor—dangerous and uncontrolled.",
+        "to understand the runes is to understand the very fabric of reality.",
+        "the mead of poetry flows through those who have the courage to drink deep of life's mysteries."
+    ];
+    
+    return phrases[Math.floor(Math.random() * phrases.length)];
 }
 
 // Memory Manager Functions
